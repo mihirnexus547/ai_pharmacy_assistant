@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pharmacy - Admin Portal</title>
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .admin-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            min-height: 70vh;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-bottom: 20px;
+        }
+
+        .admin-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-pills .nav-link {
+            color: #64748b;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 50px;
+            transition: all 0.25s ease;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--primary);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-input {
+            padding-left: 45px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+        }
+
+        .table-responsive-custom {
+            border-radius: 12px;
+            overflow-y: auto;
+            max-height: 500px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: white;
+        }
+
+
+        .table-custom {
+            margin-bottom: 0;
+        }
+
+        .table-custom th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .badge-status.Reserved {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .badge-status.Collected {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .badge-status.Cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        /* Chat History Split View */
+        .chat-split-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+            height: 550px;
+        }
+
+        .session-list {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .session-item {
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+
+        .session-item:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .session-item.active {
+            background: rgba(37, 99, 235, 0.08);
+            border-color: rgba(37, 99, 235, 0.15);
+            color: var(--primary);
+        }
+
+        .chat-viewer {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .chat-viewer-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: #f8fafc;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-viewer-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .chat-empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <div class="admin-card">
+        <!-- Header -->
+        <div class="admin-header">
+            <h2 class="admin-title">
+                <i class="bi bi-shield-lock-fill"></i>
+                AI Pharmacy Admin Portal
+            </h2>
+            <a href="/" class="btn btn-outline-primary control-btn" style="border-radius: 50px; font-weight: 600;">
+                <i class="bi bi-chat-dots-fill me-1"></i> Go to Assistant
+            </a>
+        </div>
+
+        <!-- Dashboard Layout -->
+        <div class="row">
+            <!-- Navigation -->
+            <div class="col-md-3">
+                <div class="nav flex-column nav-pills" id="adminTabs" role="tablist">
+                    <button class="nav-link active" id="medicines-tab" data-bs-toggle="pill" data-bs-target="#medicines" type="button" role="tab">
+                        <i class="bi bi-capsule"></i> Medicines
+                    </button>
+                    <button class="nav-link" id="customers-tab" data-bs-toggle="pill" data-bs-target="#customers" type="button" role="tab">
+                        <i class="bi bi-people-fill"></i> Customers
+                    </button>
+                    <button class="nav-link" id="orders-tab" data-bs-toggle="pill" data-bs-target="#orders" type="button" role="tab">
+                        <i class="bi bi-journal-check"></i> Reservations
+                    </button>
+                    <button class="nav-link" id="chats-tab" data-bs-toggle="pill" data-bs-target="#chats" type="button" role="tab">
+                        <i class="bi bi-chat-left-text-fill"></i> Conversation Logs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="col-md-9">
+                <div class="tab-content" id="adminTabsContent">
+                    
+                    <!-- MEDICINES TAB -->
+                    <div class="tab-pane fade show active" id="medicines" role="tabpanel">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" id="medicinesSearch" class="form-control search-input" placeholder="Search medicines by name or generic...">
+                        </div>
+                        <div class="table-responsive table-responsive-custom">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Generic Name</th>
+                                        <th>Strength</th>
+                                        <th>Manufacturer</th>
+                                        <th>Price (₹)</th>
+                                        <th>Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="medicinesTableBody">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CUSTOMERS TAB -->
+                    <div class="tab-pane fade" id="customers" role="tabpanel">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" id="customersSearch" class="form-control search-input" placeholder="Search customers by name or phone...">
+                        </div>
+                        <div class="table-responsive table-responsive-custom">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTableBody">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RESERVATIONS TAB -->
+                    <div class="tab-pane fade" id="orders" role="tabpanel">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" id="ordersSearch" class="form-control search-input" placeholder="Search reservations by customer name, phone or medicine...">
+                        </div>
+                        <div class="table-responsive table-responsive-custom">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Medicine</th>
+                                        <th>Qty</th>
+                                        <th>Status</th>
+                                        <th>Reserved At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CHATS TAB (SPLIT VIEW) -->
+                    <div class="tab-pane fade" id="chats" role="tabpanel">
+                        <div class="chat-split-container">
+                            <!-- Left Sidebar of sessions -->
+                            <div class="session-list" id="sessionList">
+                                <!-- Dynamic Session List Items -->
+                            </div>
+                            
+                            <!-- Right Viewer -->
+                            <div class="chat-viewer">
+                                <div class="chat-viewer-header" id="chatViewerHeader">
+                                    <i class="bi bi-chat-left-text"></i> Select a conversation log
+                                </div>
+                                <div class="chat-viewer-messages" id="chatViewerMessages">
+                                    <div class="chat-empty-state">
+                                        <i class="bi bi-chat-square-dots"></i>
+                                        <h5>No Session Selected</h5>
+                                        <p>Select a thread ID from the list on the left to review the conversation log history.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/admin_script.js"></script>
+</body>
+</html>
