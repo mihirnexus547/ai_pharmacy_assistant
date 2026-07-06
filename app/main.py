@@ -19,6 +19,22 @@ from database.database import create_tables
 async def lifespan(app: FastAPI):
     # Automatically create tables on startup
     create_tables()
+
+    # Automatically seed the database if it is empty (zero-configuration setup)
+    from database.database import SessionLocal
+    from database.seed import seed_medicines, seed_customers, seed_orders
+    db = SessionLocal()
+    try:
+        from database.models import Medicine
+        if db.query(Medicine).count() == 0:
+            seed_medicines(db)
+            seed_customers(db)
+            seed_orders(db)
+    except Exception as e:
+        print(f"Error auto-seeding database on startup: {e}")
+    finally:
+        db.close()
+
     yield
 
 app = FastAPI(
