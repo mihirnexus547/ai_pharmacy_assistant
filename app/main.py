@@ -384,3 +384,232 @@ async def api_admin_delete_customer(
         "status": "success",
         "message": "Customer and their associated orders deleted successfully"
     }
+
+
+# ============================================================
+# Medicine Management Endpoints
+# ============================================================
+class MedicineCreateRequest(BaseModel):
+    name: str
+    generic_name: str
+    strength: str
+    manufacturer: str
+    price: float
+    stock: int
+
+@app.post("/api/admin/medicines")
+async def api_admin_add_medicine(
+    request: MedicineCreateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    new_medicine = Medicine(
+        name=request.name.strip(),
+        generic_name=request.generic_name.strip(),
+        strength=request.strength.strip(),
+        manufacturer=request.manufacturer.strip(),
+        price=request.price,
+        stock=request.stock
+    )
+    db.add(new_medicine)
+    db.commit()
+    db.refresh(new_medicine)
+    return {
+        "status": "success",
+        "message": "Medicine added successfully",
+        "medicine": {
+            "id": new_medicine.id,
+            "name": new_medicine.name,
+            "generic_name": new_medicine.generic_name,
+            "strength": new_medicine.strength,
+            "manufacturer": new_medicine.manufacturer,
+            "price": new_medicine.price,
+            "stock": new_medicine.stock
+        }
+    }
+
+@app.delete("/api/admin/medicines/{medicine_id}")
+async def api_admin_delete_medicine(
+    medicine_id: int,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    medicine = db.query(Medicine).filter(Medicine.id == medicine_id).first()
+    if not medicine:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medicine not found"
+        )
+    db.delete(medicine)
+    db.commit()
+    return {
+        "status": "success",
+        "message": "Medicine deleted successfully"
+    }
+
+
+# ============================================================
+# Reservation (Order) Management Endpoints
+# ============================================================
+from database.models import OrderStatus
+
+class OrderCreateRequest(BaseModel):
+    customer_id: int
+    medicine_id: int
+    quantity: int
+
+@app.post("/api/admin/orders")
+async def api_admin_add_order(
+    request: OrderCreateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    # Verify customer and medicine exist
+    customer = db.query(Customer).filter(Customer.id == request.customer_id).first()
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found"
+        )
+        
+    medicine = db.query(Medicine).filter(Medicine.id == request.medicine_id).first()
+    if not medicine:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medicine not found"
+        )
+        
+    if request.quantity <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Quantity must be greater than 0"
+        )
+        
+    if medicine.stock < request.quantity:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Insufficient stock. Available: {medicine.stock}"
+        )
+        
+    # Deduct stock
+    medicine.stock -= request.quantity
+    
+    new_order = Order(
+        customer_id=request.customer_id,
+        medicine_id=request.medicine_id,
+        quantity=request.quantity,
+        status=OrderStatus.RESERVED
+    )
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
+    return {
+        "status": "success",
+        "message": "Reservation created successfully",
+        "order": {
+            "id": new_order.id,
+            "customer_name": customer.name,
+            "medicine_name": medicine.name,
+            "quantity": new_order.quantity,
+            "status": new_order.status.value,
+            "reserved_at": new_order.reserved_at.isoformat() if new_order.reserved_at else None
+        }
+    }
+
+@app.delete("/api/admin/orders/{order_id}")
+async def api_admin_delete_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reservation not found"
+        )
+        
+    # Restore stock when deleted
+    medicine = db.query(Medicine).filter(Medicine.id == order.medicine_id).first()
+    if medicine:
+        medicine.stock += order.quantity
+        
+    db.delete(order)
+    db.commit()
+    return {
+        "status": "success",
+        "message": "Reservation deleted and stock restored successfully"
+    }
+
+
+# ============================================================
+# Chat Session Management Endpoints
+# ============================================================
+@app.delete("/api/admin/chats/{thread_id}")
+async def api_admin_delete_chat(
+    thread_id: str,
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    try:
+        import sqlite3
+        conn = sqlite3.connect("checkpoints.db")
+        cursor = conn.cursor()
+        
+        # Verify checkpoints table exists first
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+        if cursor.fetchone():
+            cursor.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
+            cursor.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
+            conn.commit()
+            success = cursor.rowcount > 0
+        else:
+            success = False
+            
+        conn.close()
+        
+        # Let's assume deletion is successful even if it deletes 0 rows, 
+        # as it means the database state matches the request.
+        return {
+            "status": "success",
+            "message": f"Conversation history for thread '{thread_id}' deleted successfully"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete chat history: {str(e)}"
+        )

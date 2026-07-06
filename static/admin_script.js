@@ -29,6 +29,18 @@ async function loadAdminData() {
         renderCustomers(adminData.customers);
         renderOrders(adminData.orders);
         renderSessions(adminData.chats);
+
+        // Populate dropdowns in addOrderModal
+        const orderCustomerSelect = document.getElementById("orderCustomerSelect");
+        const orderMedicineSelect = document.getElementById("orderMedicineSelect");
+        if (orderCustomerSelect) {
+            orderCustomerSelect.innerHTML = `<option value="" disabled selected>Choose a customer...</option>` + 
+                adminData.customers.map(c => `<option value="${c.id}">${c.name} (${c.phone})</option>`).join("");
+        }
+        if (orderMedicineSelect) {
+            orderMedicineSelect.innerHTML = `<option value="" disabled selected>Choose a medicine...</option>` + 
+                adminData.medicines.map(m => `<option value="${m.id}">${m.name} (Stock: ${m.stock})</option>`).join("");
+        }
     } catch (err) {
         console.error("Failed to load admin data:", err);
     }
@@ -50,6 +62,11 @@ function renderMedicines(list) {
                 <span class="fw-bold ${m.stock > 0 ? 'text-success' : 'text-danger'}">
                     ${m.stock}
                 </span>
+            </td>
+            <td style="text-align: center;">
+                <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteMedicine(${m.id}, '${m.name.replace(/'/g, "\\'")}')" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-trash-fill"></i> Delete
+                </button>
             </td>
         </tr>
     `).join("");
@@ -106,6 +123,11 @@ function renderOrders(list) {
             <td><span class="badge bg-secondary">${o.quantity}</span></td>
             <td><span class="badge-status ${o.status}">${o.status}</span></td>
             <td><span class="text-muted" style="font-size: 13px;">${formatDateTime(o.reserved_at)}</span></td>
+            <td style="text-align: center;">
+                <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteOrder(${o.id})" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-trash-fill"></i> Delete
+                </button>
+            </td>
         </tr>
     `).join("");
 }
@@ -145,8 +167,17 @@ function selectSession(threadId) {
         item.classList.toggle("active", item.getAttribute("data-id") === threadId);
     });
     
-    // Header
-    chatViewerHeader.innerHTML = `<i class="bi bi-person-fill text-primary"></i> Chat Log: <strong>${threadId}</strong>`;
+    // Header with Delete Button
+    chatViewerHeader.innerHTML = `
+        <div class="d-flex align-items-center justify-content-between w-100" style="width: 100%;">
+            <div>
+                <i class="bi bi-person-fill text-primary"></i> Chat Log: <strong>${threadId}</strong>
+            </div>
+            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteChat('${threadId}')" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                <i class="bi bi-trash-fill"></i> Delete Session
+            </button>
+        </div>
+    `;
     
     // Messages
     const msgs = adminData.chats[threadId] || [];
@@ -266,6 +297,171 @@ if (addCustomerForm) {
             console.error("Add customer error:", err);
             addCustomerError.textContent = "Failed to add customer. Please try again.";
             addCustomerError.classList.remove("d-none");
+        }
+    };
+}
+
+// Delete Medicine Handler
+async function confirmDeleteMedicine(id, name) {
+    if (confirm(`Are you sure you want to delete medicine "${name}"? This will also delete all reservations associated with this medicine.`)) {
+        try {
+            const res = await fetch(`/api/admin/medicines/${id}`, {
+                method: "DELETE"
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Medicine deleted successfully.");
+                loadAdminData(); // Refresh UI tables
+            } else {
+                alert("Error deleting medicine: " + (data.detail || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Delete medicine error:", err);
+            alert("Failed to delete medicine.");
+        }
+    }
+}
+
+// Delete Reservation (Order) Handler
+async function confirmDeleteOrder(id) {
+    if (confirm(`Are you sure you want to delete reservation ID ${id}? This will restore the reserved stock.`)) {
+        try {
+            const res = await fetch(`/api/admin/orders/${id}`, {
+                method: "DELETE"
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Reservation deleted successfully and stock restored.");
+                loadAdminData(); // Refresh UI tables
+            } else {
+                alert("Error deleting reservation: " + (data.detail || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Delete reservation error:", err);
+            alert("Failed to delete reservation.");
+        }
+    }
+}
+
+// Delete Chat Session Handler
+async function confirmDeleteChat(threadId) {
+    if (confirm(`Are you sure you want to delete the entire conversation history for session "${threadId}"? This action cannot be undone.`)) {
+        try {
+            const res = await fetch(`/api/admin/chats/${threadId}`, {
+                method: "DELETE"
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Conversation log deleted successfully.");
+                
+                // Clear the chat viewer right panel
+                chatViewerHeader.innerHTML = `<i class="bi bi-chat-left-text"></i> Select a conversation log`;
+                chatViewerMessages.innerHTML = `
+                    <div class="chat-empty-state">
+                        <i class="bi bi-chat-square-dots"></i>
+                        <h5>No Session Selected</h5>
+                        <p>Select a thread ID from the list on the left to review the conversation log history.</p>
+                    </div>
+                `;
+                
+                loadAdminData(); // Refresh UI tables
+            } else {
+                alert("Error deleting conversation log: " + (data.detail || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Delete chat error:", err);
+            alert("Failed to delete conversation log.");
+        }
+    }
+}
+
+// Add Medicine Form Handler
+const addMedicineForm = document.getElementById("addMedicineForm");
+const addMedicineError = document.getElementById("addMedicineError");
+
+if (addMedicineForm) {
+    addMedicineForm.onsubmit = async (e) => {
+        e.preventDefault();
+        addMedicineError.classList.add("d-none");
+        
+        const name = document.getElementById("medicineName").value;
+        const generic_name = document.getElementById("medicineGenericName").value;
+        const strength = document.getElementById("medicineStrength").value;
+        const manufacturer = document.getElementById("medicineManufacturer").value;
+        const price = parseFloat(document.getElementById("medicinePrice").value);
+        const stock = parseInt(document.getElementById("medicineStock").value);
+        
+        try {
+            const res = await fetch("/api/admin/medicines", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, generic_name, strength, manufacturer, price, stock })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                addMedicineForm.reset();
+                const modalEl = document.getElementById("addMedicineModal");
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                
+                alert("Medicine added successfully!");
+                loadAdminData();
+            } else {
+                addMedicineError.textContent = data.detail || "An error occurred.";
+                addMedicineError.classList.remove("d-none");
+            }
+        } catch (err) {
+            console.error("Add medicine error:", err);
+            addMedicineError.textContent = "Failed to add medicine.";
+            addMedicineError.classList.remove("d-none");
+        }
+    };
+}
+
+// Add Order Form Handler
+const addOrderForm = document.getElementById("addOrderForm");
+const addOrderError = document.getElementById("addOrderError");
+
+if (addOrderForm) {
+    addOrderForm.onsubmit = async (e) => {
+        e.preventDefault();
+        addOrderError.classList.add("d-none");
+        
+        const customer_id = parseInt(document.getElementById("orderCustomerSelect").value);
+        const medicine_id = parseInt(document.getElementById("orderMedicineSelect").value);
+        const quantity = parseInt(document.getElementById("orderQuantity").value);
+        
+        try {
+            const res = await fetch("/api/admin/orders", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ customer_id, medicine_id, quantity })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                addOrderForm.reset();
+                const modalEl = document.getElementById("addOrderModal");
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                
+                alert("Reservation created successfully!");
+                loadAdminData();
+            } else {
+                addOrderError.textContent = data.detail || "An error occurred.";
+                addOrderError.classList.remove("d-none");
+            }
+        } catch (err) {
+            console.error("Add reservation error:", err);
+            addOrderError.textContent = "Failed to create reservation.";
+            addOrderError.classList.remove("d-none");
         }
     };
 }
