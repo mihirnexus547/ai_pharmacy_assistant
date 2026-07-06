@@ -27,12 +27,12 @@ class Settings(BaseSettings):
     # ==========================
     # Database
     # ==========================
-    DATABASE_URL: str = Field(...)
+    DATABASE_URL: str = "sqlite:///pharmacy.db"
 
     # ==========================
     # LLM
     # ==========================
-    GEMINI_API_KEY: str = Field(...)
+    GEMINI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
 
     GEMINI_MODEL: str = "gemini-3.1-pro-preview"
