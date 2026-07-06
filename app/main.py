@@ -297,3 +297,90 @@ async def get_admin_data(
         "orders": orders_list,
         "chats": chat_histories,
     }
+
+
+# ============================================================
+# Customer/User Management Endpoints
+# ============================================================
+from utils.phone import validate_and_normalize_phone
+
+class CustomerCreateRequest(BaseModel):
+    name: str
+    phone: str
+
+@app.post("/api/admin/customers")
+async def api_admin_add_customer(
+    request: CustomerCreateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    # Validate and normalize phone
+    try:
+        normalized_phone = validate_and_normalize_phone(request.phone)
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(val_err)
+        )
+        
+    # Check if customer already exists with this phone
+    existing = db.query(Customer).filter(Customer.phone == normalized_phone).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Customer with phone number '{normalized_phone}' already exists."
+        )
+        
+    new_customer = Customer(
+        name=request.name.strip(),
+        phone=normalized_phone
+    )
+    db.add(new_customer)
+    db.commit()
+    db.refresh(new_customer)
+    
+    return {
+        "status": "success",
+        "message": "Customer added successfully",
+        "customer": {
+            "id": new_customer.id,
+            "name": new_customer.name,
+            "phone": new_customer.phone,
+            "created_at": new_customer.created_at.isoformat() if new_customer.created_at else None
+        }
+    }
+
+@app.delete("/api/admin/customers/{customer_id}")
+async def api_admin_delete_customer(
+    customer_id: int,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found"
+        )
+        
+    db.delete(customer)
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Customer and their associated orders deleted successfully"
+    }

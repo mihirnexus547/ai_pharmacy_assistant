@@ -75,6 +75,11 @@ function renderCustomers(list) {
             <td><span class="fw-bold">${c.name}</span></td>
             <td><i class="bi bi-telephone text-muted me-1"></i> ${c.phone}</td>
             <td><span class="text-muted" style="font-size: 13px;">${formatDateTime(c.created_at)}</span></td>
+            <td style="text-align: center;">
+                <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-trash-fill"></i> Delete
+                </button>
+            </td>
         </tr>
     `).join("");
 }
@@ -196,6 +201,71 @@ if (adminLogoutBtn) {
             }
         } catch (err) {
             console.error("Logout failed:", err);
+        }
+    };
+}
+
+// Delete Customer Handler
+async function confirmDeleteCustomer(id, name) {
+    if (confirm(`Are you sure you want to delete customer "${name}"? This will also delete all reservations associated with this customer.`)) {
+        try {
+            const res = await fetch(`/api/admin/customers/${id}`, {
+                method: "DELETE"
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Customer deleted successfully.");
+                loadAdminData(); // Refresh UI tables
+            } else {
+                alert("Error deleting customer: " + (data.detail || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Delete customer error:", err);
+            alert("Failed to delete customer.");
+        }
+    }
+}
+
+// Add Customer Form Handler
+const addCustomerForm = document.getElementById("addCustomerForm");
+const addCustomerError = document.getElementById("addCustomerError");
+
+if (addCustomerForm) {
+    addCustomerForm.onsubmit = async (e) => {
+        e.preventDefault();
+        addCustomerError.classList.add("d-none");
+        
+        const name = document.getElementById("customerName").value;
+        const phone = document.getElementById("customerPhone").value;
+        
+        try {
+            const res = await fetch("/api/admin/customers", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, phone })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                // Clear and hide modal
+                addCustomerForm.reset();
+                const modalEl = document.getElementById("addCustomerModal");
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                
+                alert("Customer added successfully!");
+                loadAdminData(); // Refresh UI tables
+            } else {
+                addCustomerError.textContent = data.detail || "An error occurred.";
+                addCustomerError.classList.remove("d-none");
+            }
+        } catch (err) {
+            console.error("Add customer error:", err);
+            addCustomerError.textContent = "Failed to add customer. Please try again.";
+            addCustomerError.classList.remove("d-none");
         }
     };
 }

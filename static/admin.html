@@ -367,9 +367,14 @@
 
                     <!-- CUSTOMERS TAB -->
                     <div class="tab-pane fade" id="customers" role="tabpanel">
-                        <div class="search-wrapper">
-                            <i class="bi bi-search search-icon"></i>
-                            <input type="text" id="customersSearch" class="form-control search-input" placeholder="Search customers by name or phone...">
+                        <div class="d-flex align-items-center justify-content-between mb-3 gap-3">
+                            <div class="search-wrapper mb-0 flex-grow-1">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" id="customersSearch" class="form-control search-input" placeholder="Search customers by name or phone...">
+                            </div>
+                            <button class="btn btn-primary" style="border-radius: 50px; font-weight: 600; padding: 10px 24px;" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                                <i class="bi bi-person-plus-fill me-1"></i> Add Customer
+                            </button>
                         </div>
                         <div class="table-responsive table-responsive-custom">
                             <table class="table table-custom align-middle">
@@ -379,6 +384,7 @@
                                         <th>Name</th>
                                         <th>Phone</th>
                                         <th>Created At</th>
+                                        <th style="width: 120px; text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="customersTableBody">
@@ -440,6 +446,38 @@
 
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 20px 25px;">
+                <h5 class="modal-title fw-bold" id="addCustomerModalLabel">
+                    <i class="bi bi-person-plus text-primary me-2"></i>Add New Customer
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addCustomerForm">
+                <div class="modal-body" style="padding: 25px;">
+                    <div id="addCustomerError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="mb-3">
+                        <label for="customerName" class="form-label fw-semibold">Full Name</label>
+                        <input type="text" class="form-control" id="customerName" placeholder="Enter customer's name" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="customerPhone" class="form-label fw-semibold">Phone Number (10 digits)</label>
+                        <input type="text" class="form-control" id="customerPhone" placeholder="e.g., 9876543210" required style="border-radius: 10px; padding: 10px 15px;">
+                        <div class="form-text">Will be validated to ensure it starts with 6-9 and contains exactly 10 digits.</div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05); padding: 15px 25px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 50px; font-weight: 600; padding: 10px 25px;">Save Customer</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
