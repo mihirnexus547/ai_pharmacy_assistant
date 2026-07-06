@@ -27,3 +27,4 @@ black
 isort
 langgraph>=0.6.0
 langgraph-checkpoint-sqlite
+langchain-google-genai
