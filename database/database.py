@@ -26,8 +26,13 @@ class Base(DeclarativeBase):
 # Database Engine
 # ==========================
 
+# Convert postgres:// to postgresql:// for SQLAlchemy compatibility (e.g. Railway URLs)
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=settings.DEBUG,          # Print SQL queries in debug mode
     pool_pre_ping=True,           # Checks connections before using them
 )
