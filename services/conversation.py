@@ -5,6 +5,7 @@ Conversation service using LangGraph.
 from services.agent import agent
 from services.logger import logger
 from typing import Iterator
+from app.config import settings
 
 class ConversationService:
     """
@@ -23,6 +24,14 @@ class ConversationService:
         logger.info(
             f"[{session_id}] USER: {message}"
         )
+
+        if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "DUMMY_GEMINI_API_KEY":
+            msg = (
+                "Hello! I am currently unable to answer your query because the Gemini API key is not configured. "
+                "Please configure a valid `GEMINI_API_KEY` in the environment variables (e.g. Railway dashboard) to activate me."
+            )
+            logger.warning(f"[{session_id}] ASSISTANT (API Key missing/dummy): {msg}")
+            return msg
 
         try:
 
@@ -53,6 +62,14 @@ class ConversationService:
             return assistant_response
 
         except Exception as e:
+            err_str = str(e)
+            if "API key not valid" in err_str or "API_KEY_INVALID" in err_str:
+                msg = (
+                    "Hello! I am currently unable to answer your query because the configured Gemini API key is invalid. "
+                    "Please check and update your `GEMINI_API_KEY` in the environment variables (e.g. Railway dashboard) with a valid key."
+                )
+                logger.error(f"[{session_id}] ASSISTANT (Invalid API Key): {msg}")
+                return msg
             import traceback
             traceback.print_exc()
             raise
@@ -67,6 +84,15 @@ class ConversationService:
         """
 
         logger.info(f"[{session_id}] USER: {message}")
+
+        if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "DUMMY_GEMINI_API_KEY":
+            msg = (
+                "Hello! I am currently unable to answer your query because the Gemini API key is not configured. "
+                "Please configure a valid `GEMINI_API_KEY` in the environment variables (e.g. Railway dashboard) to activate me."
+            )
+            logger.warning(f"[{session_id}] ASSISTANT (API Key missing/dummy): {msg}")
+            yield msg
+            return
 
         try:
 
@@ -101,7 +127,16 @@ class ConversationService:
                         if text:
                             yield text
 
-        except Exception:
+        except Exception as e:
+            err_str = str(e)
+            if "API key not valid" in err_str or "API_KEY_INVALID" in err_str:
+                msg = (
+                    "Hello! I am currently unable to answer your query because the configured Gemini API key is invalid. "
+                    "Please check and update your `GEMINI_API_KEY` in the environment variables (e.g. Railway dashboard) with a valid key."
+                )
+                logger.error(f"[{session_id}] ASSISTANT (Invalid API Key): {msg}")
+                yield msg
+                return
             logger.exception("Streaming failed.")
 
 
