@@ -33,27 +33,38 @@ class CheckStockInput(BaseModel):
 @tool(args_schema=SearchMedicineInput)
 def search_medicine(medicine_name: str) -> str:
     """
-    Search for a medicine in the database.
+    Search for a medicine in the database. Returns all matching entries including manufacturer, strength, price, and stock.
     """
 
     db = SessionLocal()
 
     try:
-        repo = crud.MedicineRepository(db)
+        from sqlalchemy import func
+        from database.models import Medicine
 
-        medicine = repo.get_by_name(medicine_name)
+        # Fetch all matching medicines by name or generic name
+        medicines = db.query(Medicine).filter(
+            (func.lower(Medicine.name) == medicine_name.lower()) |
+            (func.lower(Medicine.generic_name) == medicine_name.lower())
+        ).all()
 
-        if not medicine:
+        if not medicines:
+            # Try partial matching if exact name fails
+            medicines = db.query(Medicine).filter(
+                (Medicine.name.ilike(f"%{medicine_name}%")) |
+                (Medicine.generic_name.ilike(f"%{medicine_name}%"))
+            ).all()
+
+        if not medicines:
             return "Medicine not found."
 
-        return f"""
-            Medicine Name : {medicine.name}
-            Generic Name  : {medicine.generic_name}
-            Strength      : {medicine.strength}
-            Manufacturer  : {medicine.manufacturer}
-            Price         : ₹{medicine.price}
-            Stock         : {medicine.stock}
-            """.strip()
+        result = []
+        for m in medicines:
+            result.append(
+                f"Brand Name: {m.name}, Generic Name: {m.generic_name}, Strength: {m.strength}, Manufacturer: {m.manufacturer}, Price: ₹{m.price}, Stock: {m.stock}"
+            )
+        
+        return "\n".join(result)
 
     finally:
         db.close()

@@ -15,10 +15,16 @@ from utils.phone import validate_and_normalize_phone
 # Input Schemas
 # ----------------------------
 
+from typing import Optional
+
 class ReserveMedicineInput(BaseModel):
     phone: str = Field(description="Customer phone number")
     medicine_name: str = Field(description="Medicine name")
     quantity: int = Field(description="Quantity to reserve")
+    manufacturer: Optional[str] = Field(
+        default=None,
+        description="Optional manufacturer name. Specify if the patient has chosen a manufacturer."
+    )
 
 
 class CancelOrderInput(BaseModel):
@@ -38,9 +44,11 @@ def reserve_medicine(
     phone: str,
     medicine_name: str,
     quantity: int,
+    manufacturer: Optional[str] = None,
 ) -> str:
     """
     Reserve medicine for a customer.
+    If multiple manufacturers are available and manufacturer parameter is not provided, the tool will return a list of available manufacturers for the patient to choose from.
     """
     try:
         phone = validate_and_normalize_phone(phone)
@@ -50,24 +58,50 @@ def reserve_medicine(
     db = SessionLocal()
 
     try:
+        from sqlalchemy import func
+        from database.models import Medicine
 
         customer = crud.get_customer_by_phone(db, phone)
 
         if not customer:
             return "Customer not found."
 
-        medicine = crud.get_medicine_by_name(
-            db,
-            medicine_name,
-        )
+        # Fetch all matching medicines by name (brand or generic)
+        medicines = db.query(Medicine).filter(
+            (func.lower(Medicine.name) == medicine_name.lower()) |
+            (func.lower(Medicine.generic_name) == medicine_name.lower())
+        ).all()
 
-        if not medicine:
-            return "Medicine not found."
+        if not medicines:
+            # Try partial matching if exact name fails
+            medicines = db.query(Medicine).filter(
+                (Medicine.name.ilike(f"%{medicine_name}%")) |
+                (Medicine.generic_name.ilike(f"%{medicine_name}%"))
+            ).all()
+
+        if not medicines:
+            return f"Medicine '{medicine_name}' not found."
+
+        # Filter by manufacturer if provided
+        if manufacturer:
+            matching = [m for m in medicines if manufacturer.lower() in m.manufacturer.lower()]
+            if not matching:
+                avail_manufacturers = ", ".join([f"{m.manufacturer} (Stock: {m.stock}, Price: ₹{m.price})" for m in medicines])
+                return f"Medicine '{medicine_name}' is not available from manufacturer '{manufacturer}'. Available manufacturers are: {avail_manufacturers}. Please ask the patient to choose one."
+            medicine = matching[0]
+        else:
+            # No manufacturer provided. If there are multiple entries with different manufacturers:
+            if len(medicines) > 1:
+                manufacturers_list = []
+                for m in medicines:
+                    manufacturers_list.append(f"{m.manufacturer} (Strength: {m.strength}, Stock: {m.stock}, Price: ₹{m.price})")
+                options_str = ", ".join(manufacturers_list)
+                return f"Multiple manufacturers are available for '{medicine_name}': {options_str}. Please ask the patient to choose one of these manufacturers."
+            
+            medicine = medicines[0]
 
         if medicine.stock < quantity:
-            return (
-                f"Only {medicine.stock} units are available."
-            )
+            return f"Only {medicine.stock} units are available for {medicine.name} by {medicine.manufacturer}."
 
         medicine.stock -= quantity
 
@@ -83,12 +117,11 @@ def reserve_medicine(
         return (
             f"Reservation successful.\n"
             f"Order ID: {order.id}\n"
-            f"Medicine: {medicine.name}\n"
+            f"Medicine: {medicine.name} ({medicine.strength}) by {medicine.manufacturer}\n"
             f"Quantity: {quantity}"
         )
 
     finally:
-
         db.close()
 
 

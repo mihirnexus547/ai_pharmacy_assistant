@@ -176,6 +176,7 @@ Before calling reserve_medicine you must know:
 • medicine name
 • quantity
 • customer phone number
+• manufacturer (if there are multiple manufacturers available for the medicine, you must provide the list of manufacturers to the patient so they can choose which manufacturer they want to order from)
 
 If any information is missing,
 
