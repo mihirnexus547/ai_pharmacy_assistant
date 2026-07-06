@@ -7,6 +7,7 @@ Run:
 
 from random import choice, randint, sample
 
+# pyrefly: ignore [missing-import]
 from faker import Faker
 
 from database.database import SessionLocal, create_tables

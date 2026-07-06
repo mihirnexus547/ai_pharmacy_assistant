@@ -7,6 +7,7 @@ from langchain_core.tools import tool
 
 from database.database import SessionLocal
 from database import crud
+from utils.phone import validate_and_normalize_phone
 
 
 class RegisterCustomerInput(BaseModel):
@@ -34,6 +35,10 @@ def register_customer(name: str, phone: str) -> str:
     """
     Register a new customer.
     """
+    try:
+        phone = validate_and_normalize_phone(phone)
+    except ValueError as e:
+        return f"Error: {e}"
 
     db = SessionLocal()
 
@@ -68,6 +73,10 @@ def get_customer(phone: str) -> str:
     """
     Retrieve customer information.
     """
+    try:
+        phone = validate_and_normalize_phone(phone)
+    except ValueError as e:
+        return f"Error: {e}"
 
     db = SessionLocal()
 
@@ -93,6 +102,10 @@ def update_customer(phone: str, name: str) -> str:
     """
     Update customer details.
     """
+    try:
+        phone = validate_and_normalize_phone(phone)
+    except ValueError as e:
+        return f"Error: {e}"
 
     db = SessionLocal()
 

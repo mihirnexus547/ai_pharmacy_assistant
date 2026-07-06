@@ -3,10 +3,12 @@ Order related LangChain tools.
 """
 
 from pydantic import BaseModel, Field
+# pyrefly: ignore [missing-import]
 from langchain_core.tools import tool
 
 from database.database import SessionLocal
 from database import crud
+from utils.phone import validate_and_normalize_phone
 
 
 # ----------------------------
@@ -40,6 +42,10 @@ def reserve_medicine(
     """
     Reserve medicine for a customer.
     """
+    try:
+        phone = validate_and_normalize_phone(phone)
+    except ValueError as e:
+        return f"Error: {e}"
 
     db = SessionLocal()
 
@@ -124,6 +130,10 @@ def get_customer_orders(phone: str) -> str:
     """
     Return all customer reservations.
     """
+    try:
+        phone = validate_and_normalize_phone(phone)
+    except ValueError as e:
+        return f"Error: {e}"
 
     db = SessionLocal()
 

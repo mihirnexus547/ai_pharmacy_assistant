@@ -184,3 +184,18 @@ function formatDateTime(isoString) {
 
 // Load data on page entry
 loadAdminData();
+
+// Logout Handler
+const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+if (adminLogoutBtn) {
+    adminLogoutBtn.onclick = async () => {
+        try {
+            const res = await fetch("/api/admin/logout", { method: "POST" });
+            if (res.ok) {
+                window.location.href = "/login";
+            }
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
+    };
+}

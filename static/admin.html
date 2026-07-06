@@ -253,6 +253,46 @@
             font-size: 48px;
             margin-bottom: 15px;
         }
+
+        @media (max-width: 576px) {
+            .admin-container {
+                margin: 15px auto;
+                padding: 0 10px;
+            }
+            .admin-card {
+                padding: 15px;
+            }
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                align-items: center;
+            }
+            .admin-title {
+                font-size: 20px;
+                justify-content: center;
+            }
+            .nav-pills .nav-link {
+                padding: 10px 16px;
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+            .table-custom th, .table-custom td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            .chat-split-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 15px;
+            }
+            .session-list {
+                max-height: 200px;
+            }
+            .chat-viewer {
+                height: 400px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -265,9 +305,14 @@
                 <i class="bi bi-shield-lock-fill"></i>
                 AI Pharmacy Admin Portal
             </h2>
-            <a href="/" class="btn btn-outline-primary control-btn" style="border-radius: 50px; font-weight: 600;">
-                <i class="bi bi-chat-dots-fill me-1"></i> Go to Assistant
-            </a>
+            <div style="display: flex; gap: 10px;">
+                <button id="adminLogoutBtn" class="btn btn-outline-danger control-btn" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </button>
+                <a href="/" class="btn btn-outline-primary control-btn" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">
+                    <i class="bi bi-chat-dots-fill me-1"></i> Go to Assistant
+                </a>
+            </div>
         </div>
 
         <!-- Dashboard Layout -->

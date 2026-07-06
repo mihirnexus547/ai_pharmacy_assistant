@@ -2,6 +2,7 @@
 General pharmacy related LangChain tools.
 """
 
+# pyrefly: ignore [missing-import]
 from langchain_core.tools import tool
 
 

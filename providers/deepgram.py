@@ -23,17 +23,17 @@ class DeepgramClient:
 
         self.transcript_queue = asyncio.Queue()
 
-    async def connect(self):
+    async def connect(self, encoding="linear16", sample_rate=16000):
 
         url = (
-            "wss://api.deepgram.com/v1/listen"
-            "?encoding=linear16"
-            "&sample_rate=16000"
-            "&channels=1"
-            "&interim_results=true"
-            "&punctuate=true"
-            "&smart_format=true"
-            "&endpointing=200"
+            f"wss://api.deepgram.com/v1/listen"
+            f"?encoding={encoding}"
+            f"&sample_rate={sample_rate}"
+            f"&channels=1"
+            f"&interim_results=true"
+            f"&punctuate=true"
+            f"&smart_format=true"
+            f"&endpointing=200"
         )
 
 

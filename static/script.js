@@ -8,6 +8,8 @@
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const clearBtn = document.getElementById("clearBtn");
+const clearBtnMobile = document.getElementById("clearBtnMobile");
+const micBtnMobile = document.getElementById("micBtnMobile");
 const chatContainer = document.getElementById("chatContainer");
 const thinkingIndicator = document.getElementById("thinkingIndicator");
 const connectionStatus = document.getElementById("connectionStatus");
@@ -161,10 +163,15 @@ function welcomeMessage() {
 /* ============================================================
     CLEAR CHAT
 ============================================================ */
-clearBtn.onclick = () => {
+const clearAction = () => {
     chatContainer.innerHTML = "";
     welcomeMessage();
 };
+
+clearBtn.onclick = clearAction;
+if (clearBtnMobile) {
+    clearBtnMobile.onclick = clearAction;
+}
 
 /* ============================================================
     AUDIO VISUALIZATION (REAL-TIME)
@@ -322,6 +329,11 @@ async function startVoiceChat() {
             // State changes
             startBtn.disabled = true;
             stopBtn.disabled = false;
+            if (micBtnMobile) {
+                micBtnMobile.innerHTML = '<i class="bi bi-stop-fill"></i>';
+                micBtnMobile.classList.add("listening-active");
+                micBtnMobile.title = "Stop Listening";
+            }
             
             setStatus("🎤 Listening");
             setConnection("Connected", "connected");
@@ -423,11 +435,26 @@ async function cleanupVoiceElements() {
 
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    if (micBtnMobile) {
+        micBtnMobile.innerHTML = '<i class="bi bi-mic-fill"></i>';
+        micBtnMobile.classList.remove("listening-active");
+        micBtnMobile.title = "Start Listening";
+    }
     waveform.style.opacity = "0.3";
 }
 
 startBtn.onclick = startVoiceChat;
 stopBtn.onclick = stopVoiceChat;
+
+if (micBtnMobile) {
+    micBtnMobile.onclick = () => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            stopVoiceChat();
+        } else {
+            startVoiceChat();
+        }
+    };
+}
 
 /* ============================================================
     TEXT CHAT (HTTP POST)

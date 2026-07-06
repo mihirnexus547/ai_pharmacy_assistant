@@ -7,7 +7,9 @@ and declarative base for the application.
 
 from collections.abc import Generator
 
+# pyrefly: ignore [missing-import]
 from sqlalchemy import create_engine
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import settings
@@ -71,7 +73,7 @@ def get_db() -> Generator[Session, None, None]:
 def create_tables() -> None:
     """
     Create all database tables.
-
-    Useful during development.
     """
+    from database import models  # noqa: F401
+
     Base.metadata.create_all(bind=engine)

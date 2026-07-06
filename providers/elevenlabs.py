@@ -25,6 +25,7 @@ class ElevenLabsProvider:
     def text_to_speech(
         self,
         text: str,
+        output_format: str = "mp3_44100_128",
     ) -> bytes:
         """
         Generate complete speech.
@@ -38,7 +39,7 @@ class ElevenLabsProvider:
 
             text=text,
 
-            output_format="mp3_44100_128",
+            output_format=output_format,
 
         )
 
@@ -47,9 +48,10 @@ class ElevenLabsProvider:
     def stream_text_to_speech(
         self,
         text: str,
+        output_format: str = "mp3_44100_128",
     ):
         """
-        Stream MP3 chunks.
+        Stream speech chunks.
         """
 
         audio_stream = self.client.text_to_speech.convert(
@@ -60,7 +62,7 @@ class ElevenLabsProvider:
 
             text=text,
 
-            output_format="mp3_44100_128",
+            output_format=output_format,
 
         )
 

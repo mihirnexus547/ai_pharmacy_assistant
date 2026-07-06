@@ -1,269 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmAssist - AI Pharmacy Voice Agent</title>
+    
+    <!-- Bootstrap Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #090e1a;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-glow: rgba(59, 130, 246, 0.15);
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.35);
+            --secondary: #6366f1;
+            --secondary-glow: rgba(99, 102, 241, 0.35);
+            --success: #10b981;
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <title>AI Pharmacy Assistant</title>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
 
-    <!-- Bootstrap -->
+        h1, h2, h3, h4, .btn {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+        /* --- Glowing Background Blobs --- */
+        .glowing-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+        }
+        .blob-2 {
+            bottom: 10%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 70%);
+        }
 
-    <!-- Bootstrap Icons -->
+        /* --- Container & Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
 
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    >
+        /* --- Header / Navigation --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+        .brand i {
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand span {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
 
-    <!-- Google Font -->
+        /* --- Hero Section --- */
+        .hero {
+            padding: 80px 0 60px 0;
+            text-align: center;
+            position: relative;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .hero h1 {
+            font-size: 56px;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px;
+            max-width: 680px;
+            margin: 0 auto 36px auto;
+            color: var(--text-muted);
+        }
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+        /* --- Buttons --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            font-size: 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.35);
+            border: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+        }
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
 
-    <!-- CSS -->
+        /* --- Section Styling --- */
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-title h2 {
+            font-size: 36px;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
 
-    <link
-        rel="stylesheet"
-        href="/static/styles.css"
-    >
+        /* --- Feature Grid --- */
+        .features {
+            padding: 60px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.1);
+        }
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            background: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+        .card:hover .card-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            transform: scale(1.05);
+        }
+        .card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        .card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
 
+        /* --- Interactive & Twilio Section --- */
+        .twilio-section {
+            padding: 60px 0 100px 0;
+        }
+        .banner {
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), rgba(17, 24, 39, 0.9));
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .banner-content {
+            flex: 1 1 500px;
+        }
+        .banner-content h2 {
+            font-size: 32px;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .banner-content p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+        .step-list {
+            list-style: none;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .step-text h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .step-text p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0;
+        }
+        .banner-visual {
+            flex: 1 1 350px;
+            background: rgba(9, 14, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .phone-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 20px;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .flow-node {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+        .flow-arrow {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        /* --- Footer --- */
+        footer.landing-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 40px; }
+            .hero p { font-size: 15px; }
+            .banner { padding: 30px 20px; }
+        }
+
+        @media (max-width: 576px) {
+            header {
+                padding: 15px 0;
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .hero h1 {
+                font-size: 32px;
+                line-height: 1.25;
+            }
+            .hero p {
+                font-size: 14px;
+            }
+            .hero-actions {
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+            }
+            .hero-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .banner {
+                padding: 24px 16px;
+                gap: 24px;
+            }
+            .section-title h2 {
+                font-size: 28px;
+            }
+            .section-title p {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="app-container">
+    <div class="glowing-blob blob-1"></div>
+    <div class="glowing-blob blob-2"></div>
 
-    <!-- ================= HEADER ================= -->
-
-    <header class="topbar">
-
-        <div class="brand">
-
-            <div class="logo">
-
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="/" class="brand">
                 <i class="bi bi-capsule-pill"></i>
-
+                <span>PharmAssist</span>
+            </a>
+            <div class="nav-links">
+                <a href="/admin" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Admin Portal</a>
             </div>
+        </header>
 
-            <div>
-
-                <h3>AI Pharmacy Assistant</h3>
-
-                <span>
-                    Voice & Text Powered Pharmacy Agent
-                </span>
-
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-badge">
+                <i class="bi bi-stars"></i> Next-Gen Conversational Agent
             </div>
-
-        </div>
-
-        <div class="status-wrapper">
-
-            <div class="session-badge me-2" id="sessionBadge" style="cursor: pointer;" title="Click to change Session ID">
-                <i class="bi bi-person-fill"></i>
-                <span id="sessionNameText">Default</span>
+            <h1>Smart Voice & Text Agent <br>for Pharmacy Assistance</h1>
+            <p>PharmAssist is an AI-powered conversational agent that manages medicine inventory, coordinates reservations, interprets medical queries via RAG, and integrates directly with phone voice lines.</p>
+            <div class="hero-actions">
+                <a href="/assistant" class="btn btn-primary">
+                    <i class="bi bi-chat-dots-fill"></i> Launch Browser Agent
+                </a>
+                <a href="#phone-integration" class="btn btn-outline">
+                    <i class="bi bi-telephone-fill"></i> View Twilio Setup
+                </a>
             </div>
+        </section>
 
-            <button id="logoutBtn" class="btn btn-outline-danger btn-sm me-3" style="border-radius: 50px; display: flex; align-items: center; gap: 5px; font-weight: 600; padding: 8px 16px;" title="Logout and switch user">
-                <i class="bi bi-box-arrow-right"></i>
-                Logout
-            </button>
-
-
-            <div
-                class="status-badge disconnected"
-                id="connectionStatus"
-            >
-
-                <span class="dot" style="background-color: var(--danger)"></span>
-
-                Disconnected
-
+        <!-- Feature Cards -->
+        <section class="features">
+            <div class="section-title">
+                <h2>Capabilities & Skills</h2>
+                <p>Designed to replicate a fully functioning pharmacy clerk over both voice and web chat</p>
             </div>
+            <div class="grid">
+                <!-- Card 1 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-box-seam"></i></div>
+                    <h3>Inventory Stock Checking</h3>
+                    <p>Real-time database queries to verify exact stock counts and details for medicines such as Paracetamol, Crocin, Metformin, Ibuprofen, and more.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+                    <h3>Secure Reservations</h3>
+                    <p>Create, cancel, and retrieve medication reservations using customers' verified 10-digit mobile numbers with strict security policies.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-database-fill-gear"></i></div>
+                    <h3>RAG Medical Knowledge</h3>
+                    <p>Uses semantic RAG to instantly retrieve drug factsheets, answering user queries regarding medicine side effects, warnings, and dosages.</p>
+                </div>
+                <!-- Card 4 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-telephone-outbound"></i></div>
+                    <h3>Twilio Telephony Voice</h3>
+                    <p>Native integration with Twilio Media Streams, including G.711 mu-law bidirectional audio streaming and real-time interruption handling.</p>
+                </div>
+                <!-- Card 5 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-people-fill"></i></div>
+                    <h3>Call Personalization</h3>
+                    <p>Extracts incoming caller ID automatically from Twilio, normalizes the number, and welcomes returning customers by name with customized context.</p>
+                </div>
+                <!-- Card 6 -->
+                <div class="card">
+                    <div class="card-icon"><i class="bi bi-arrow-left-right"></i></div>
+                    <h3>Pharmacist Hand-off</h3>
+                    <p>Safety-first triage protocol that automatically routes complex prescription queries and clinical diagnoses to human pharmacists.</p>
+                </div>
+            </div>
+        </section>
 
-        </div>
+        <!-- Twilio Setup Section -->
+        <section class="twilio-section" id="phone-integration">
+            <div class="section-title">
+                <h2>Telephony & Twilio Integration</h2>
+                <p>Connect your custom Twilio phone number to the pharmacy assistant</p>
+            </div>
+            <div class="banner">
+                <div class="banner-content">
+                    <h2>How to link your Twilio number</h2>
+                    <p>Our backend serves an XML TwiML endpoint that connects Twilio incoming voice streams to a fast, bidirectional WebSocket connection.</p>
+                    
+                    <div class="step-list">
+                        <div class="step-item">
+                            <div class="step-num">1</div>
+                            <div class="step-text">
+                                <h4>Expose your application</h4>
+                                <p>Expose port 8000 using <code>ngrok http 8000</code> or deploy the application to a cloud provider like Railway.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-num">2</div>
+                            <div class="step-text">
+                                <h4>Configure the Webhook</h4>
+                                <p>Go to your Twilio Console > Active Numbers, and set "A Call Comes In" webhook to <code>https://your-public-url.ngrok-free.app/twilio/inbound</code> as HTTP POST.</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-num">3</div>
+                            <div class="step-text">
+                                <h4>Place a call</h4>
+                                <p>Dial the Twilio number! The agent will answer instantly, transcribing and replying over the phone line in real-time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    </header>
+                <div class="banner-visual">
+                    <div class="phone-badge">
+                        <i class="bi bi-telephone-inbound-fill"></i> +1 (609) 262-4698
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Telephony Audio Pipeline</div>
+                    <div class="flow-diagram">
+                        <div class="flow-node">Caller Audio (G.711 mu-law, 8kHz)</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node">Twilio Media Stream WebSocket</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node">Deepgram STT (Live Transcription)</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node">LangGraph React Agent & RAG Reranking</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node">ElevenLabs Speech Output (ulaw_8000)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- ================= CHAT ================= -->
-
-    <main
-        id="chatContainer"
-        class="chat-container"
-    >
-
-    </main>
-
-    <!-- ================= THINKING ================= -->
-
-    <div
-        class="thinking"
-        id="thinkingIndicator"
-    >
-
-        <div class="avatar assistant-avatar">
-
-            <i class="bi bi-robot"></i>
-
-        </div>
-
-        <div class="thinking-box">
-
-            <span></span>
-
-            <span></span>
-
-            <span></span>
-
-        </div>
-
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <p>&copy; 2026 PharmAssist AI Agent. Built with LangGraph, Deepgram, and ElevenLabs.</p>
+        </footer>
     </div>
-
-    <!-- ================= SUGGESTIONS ================= -->
-
-    <div class="suggestions-container" id="suggestionsContainer">
-
-        <div class="suggestion-chip" data-msg="Check stock of Paracetamol">💊 Check Paracetamol Stock</div>
-
-        <div class="suggestion-chip" data-msg="Reserve 5 units of Ibuprofen for phone 1234567890">📦 Reserve Ibuprofen</div>
-
-        <div class="suggestion-chip" data-msg="What are the pharmacy opening hours?">🕒 Opening Hours</div>
-
-        <div class="suggestion-chip" data-msg="Search for Amoxicillin">🔍 Search Amoxicillin</div>
-
-    </div>
-
-    <!-- ================= TEXT INPUT ================= -->
-
-    <div class="text-input-panel">
-
-        <input type="text" id="textInput" class="chat-input" placeholder="Type a message here..." autocomplete="off">
-
-        <button id="sendBtn" class="send-btn">
-
-            <i class="bi bi-send-fill"></i>
-
-        </button>
-
-    </div>
-
-    <!-- ================= VOICE ================= -->
-
-    <section class="voice-panel">
-
-        <div class="voice-status">
-
-            <div>
-
-                <strong id="voiceStatus">
-
-                    Ready
-
-                </strong>
-
-            </div>
-
-            <div
-                class="wave"
-                id="waveform"
-                style="opacity: 0.3;"
-            >
-
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-
-            </div>
-
-        </div>
-
-    </section>
-
-    <!-- ================= CONTROLS ================= -->
-
-    <footer class="controls">
-
-        <button
-            id="startBtn"
-            class="btn btn-primary control-btn"
-        >
-
-            <i class="bi bi-mic-fill"></i>
-
-            Start Listening
-
-        </button>
-
-        <button
-            id="stopBtn"
-            class="btn btn-danger control-btn"
-            disabled
-        >
-
-            <i class="bi bi-stop-fill"></i>
-
-            Stop
-
-        </button>
-
-        <button
-            id="clearBtn"
-            class="btn btn-outline-secondary control-btn"
-        >
-
-            <i class="bi bi-trash"></i>
-
-            Clear Chat
-
-        </button>
-
-    </footer>
-
-</div>
-
-<audio
-    id="audioPlayer"
-    autoplay
-></audio>
-
-<!-- ================= SESSION MODAL ================= -->
-<div id="sessionModal" class="modal-overlay">
-    <div class="session-modal-card">
-        <div class="logo mb-3 mx-auto">
-            <i class="bi bi-person-badge"></i>
-        </div>
-        <h4>Enter Session ID</h4>
-        <p class="text-muted">Enter your name or session identifier to load your chat history and memory.</p>
-        <input type="text" id="sessionInput" class="form-control chat-input text-center mb-3" placeholder="e.g., Mihir, User123" required>
-        <button id="sessionSubmitBtn" class="btn btn-primary control-btn w-100">
-            Start Session
-        </button>
-    </div>
-</div>
-
-<script src="/static/script.js?v=4"></script>
-
-
-
 
 </body>
-
 </html>
