@@ -33,8 +33,7 @@ class DeepgramClient:
             f"&interim_results=true"
             f"&punctuate=true"
             f"&smart_format=true"
-            f"&endpointing=200"
-            f"&utterance_end_ms=500"
+            f"&endpointing=500"
         )
 
 
