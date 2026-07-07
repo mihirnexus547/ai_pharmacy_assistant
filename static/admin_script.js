@@ -22,7 +22,7 @@ const ordersSearch = document.getElementById("ordersSearch");
 // Initialize Data Load
 async function loadAdminData() {
     try {
-        const res = await fetch("/api/admin/data");
+        const res = await fetch("/api/admin/data?_=" + new Date().getTime());
         adminData = await res.json();
         
         renderMedicines(adminData.medicines);

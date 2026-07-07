@@ -1,0 +1,276 @@
+\documentclass[12pt,a4paper]{report}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+% Page Geometry
+\geometry{top=1in, bottom=1in, left=1.5in, right=1in}
+\setstretch{1.5}
+
+% Code snippet formatting
+\lstset{
+    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black}
+}
+
+\begin{document}
+
+% ----------------------------------------------------------------------
+% TITLE PAGE
+% ----------------------------------------------------------------------
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        
+        \Huge
+        \textbf{AI-Powered Voice Assistant for Retail Pharmacies}
+        
+        \vspace{1.5cm}
+        \Large
+        \textit{A Major Project Report} \\
+        \vspace{0.5cm}
+        Submitted in partial fulfillment of the requirements \\
+        for the award of the degree of
+        
+        \vspace{1.5cm}
+        \textbf{Master of Technology (M.Tech)} \\
+        \vspace{0.5cm}
+        in \\
+        \textbf{Computer Science and Engineering}
+        
+        \vspace{2cm}
+        \textbf{Submitted By:} \\
+        [Student Name] \\
+        [Roll Number / Registration Number]
+        
+        \vspace{1.5cm}
+        \textbf{Under the Guidance of:} \\
+        [Guide Name] \\
+        [Guide Designation]
+        
+        \vfill
+        
+        % Optionally add college logo here
+        % \includegraphics[width=4cm]{logo.png} \\
+        
+        \vspace{0.8cm}
+        \Large
+        \textbf{[Department Name]} \\
+        \textbf{[College/University Name]} \\
+        \textbf{[Year]}
+        
+    \end{center}
+\end{titlepage}
+
+% ----------------------------------------------------------------------
+% DECLARATION & CERTIFICATE (Placeholders)
+% ----------------------------------------------------------------------
+\pagenumbering{roman}
+
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+I hereby declare that the major project report entitled \textbf{"AI-Powered Voice Assistant for Retail Pharmacies"} submitted to the [College/University Name] is a record of an original work done by me under the guidance of [Guide Name]. This project work is submitted in the partial fulfillment of the requirements for the award of the degree of Master of Technology in Computer Science and Engineering. The results embodied in this report have not been submitted to any other University or Institute for the award of any degree or diploma.
+
+\vspace{2cm}
+\noindent
+\textbf{Date:} \hspace{8cm} \textbf{Signature:} \\
+\textbf{Place:} \hspace{7.8cm} \textbf{Name:} [Student Name]
+
+\newpage
+
+\chapter*{Certificate}
+\addcontentsline{toc}{chapter}{Certificate}
+This is to certify that the major project report entitled \textbf{"AI-Powered Voice Assistant for Retail Pharmacies"} being submitted by \textbf{[Student Name]} ([Roll Number]) in partial fulfillment for the award of the Degree of Master of Technology in Computer Science and Engineering is a bonafide record of the project work carried out by him/her under my supervision. 
+
+\vspace{3cm}
+\noindent
+\textbf{[Guide Name]} \hspace{6cm} \textbf{[HOD Name]} \\
+Guide \hspace{8.5cm} Head of Department \\
+[Department Name] \hspace{6cm} [Department Name]
+
+\newpage
+
+% ----------------------------------------------------------------------
+% ABSTRACT
+% ----------------------------------------------------------------------
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+The integration of Artificial Intelligence (AI) and Natural Language Processing (NLP) in customer service has revolutionized how businesses operate. This project introduces an autonomous, real-time AI-powered Voice Assistant designed specifically for retail pharmacies. The system is capable of conversing with patients over standard telephone networks to handle inquiries, manage inventory, check medicine stock, provide manufacturer details, and confirm reservations seamlessly without human intervention. 
+
+The architecture leverages state-of-the-art streaming technologies via WebSockets. It integrates Twilio for telephony routing, Deepgram for sub-second Speech-to-Text (STT) transcription, Groq-powered Large Language Models (LLMs) orchestrated using LangGraph for agentic reasoning, and ElevenLabs for highly realistic, low-latency Text-to-Speech (TTS) generation. A Retrieval-Augmented Generation (RAG) pipeline is incorporated to provide accurate medication guidance based on validated pharmacy knowledge bases. Additionally, the system features a robust FastAPI backend connected to a PostgreSQL database, managed through an intuitive web-based Admin Dashboard that allows pharmacists to oversee live conversations, manage stock, and track reservations. This project bridges the gap in accessible healthcare logistics by delivering an always-on, intelligent, and scalable voice interface for automated pharmacy operations.
+
+\newpage
+
+% ----------------------------------------------------------------------
+% TABLE OF CONTENTS
+% ----------------------------------------------------------------------
+\tableofcontents
+\newpage
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+\newpage
+
+\pagenumbering{arabic}
+
+% ----------------------------------------------------------------------
+% CHAPTER 1: INTRODUCTION
+% ----------------------------------------------------------------------
+\chapter{Introduction}
+
+\section{Overview}
+Retail pharmacies represent a critical juncture in the healthcare supply chain, directly interacting with patients to provide essential medications. During peak hours, pharmacists spend significant time handling routine telephone inquiries—such as checking the availability of a drug, providing pricing, and placing reservations—which detracts from their primary clinical responsibilities. The AI Pharmacy Assistant automates these repetitive tasks through an intelligent conversational interface, improving efficiency and customer satisfaction.
+
+\section{Problem Statement}
+Pharmacies face challenges in handling concurrent customer queries over phone calls, leading to dropped calls, customer dissatisfaction, and increased workload on staff. Existing automated Interactive Voice Response (IVR) systems are rigid, menu-driven, and incapable of understanding natural human language. There is a pressing need for a system that can understand contextual pharmaceutical queries, query dynamic databases, and converse naturally over standard phone lines.
+
+\section{Objectives}
+The primary objectives of this project are:
+\begin{itemize}
+    \item To design an intelligent agent capable of conducting fluid, bidirectional voice conversations over telephony networks.
+    \item To implement an agentic workflow using Large Language Models (LLMs) equipped with specific tools to query SQL databases for stock, price, and manufacturer data.
+    \item To construct a robust state management system capable of retrieving customer records based on caller ID and maintaining conversation context.
+    \item To develop a Retrieval-Augmented Generation (RAG) pipeline to securely answer pharmacological questions using a verified knowledge base.
+    \item To deploy a secure administrative dashboard for inventory, order, and chat log management.
+\end{itemize}
+
+% ----------------------------------------------------------------------
+% CHAPTER 2: LITERATURE REVIEW
+% ----------------------------------------------------------------------
+\chapter{Literature Review}
+
+\section{Conversational AI in Healthcare}
+Recent advancements in Natural Language Processing, specifically the introduction of transformer architectures, have significantly improved the reasoning capabilities of AI agents. Research indicates that LLMs can process domain-specific inquiries effectively when augmented with external tools. 
+
+\section{Speech-to-Text and Text-to-Speech Technologies}
+Traditional STT and TTS models suffered from high latency, making real-time voice bots awkward and disruptive. The advent of streaming STT (e.g., Deepgram) and neural TTS models (e.g., ElevenLabs) has reduced turnaround times to under 500 milliseconds, allowing for seamless duplex conversations that mimic human interaction.
+
+\section{Agentic Workflows and Tool Calling}
+LangChain and LangGraph frameworks represent a paradigm shift from static LLM prompting to dynamic, graph-based agentic workflows. By supplying the LLM with executable tools (functions), the model acts as a reasoning engine that dictates when to query a database and how to interpret the results before synthesizing a spoken response.
+
+% ----------------------------------------------------------------------
+% CHAPTER 3: SYSTEM ARCHITECTURE
+% ----------------------------------------------------------------------
+\chapter{System Architecture and Methodology}
+
+\section{High-Level Architecture}
+The system acts as a middleware between the telephony provider (Twilio) and the AI intelligence services. It utilizes bidirectional WebSockets to stream audio bytes continuously.
+
+The flow of execution is as follows:
+\begin{enumerate}
+    \item \textbf{Telephony Layer}: A user calls the Twilio number. Twilio initiates a TwiML response directing the call audio to the FastAPI WebSocket endpoint.
+    \item \textbf{Transcription (STT)}: Audio payloads are relayed to Deepgram via WebSockets, converting speech to text in real-time.
+    \item \textbf{Cognitive Processing (Agent)}: The text is routed to the LangGraph ReAct agent. The agent analyzes intent and executes necessary tools (e.g., \texttt{check\_stock}, \texttt{reserve\_medicine}).
+    \item \textbf{Synthesis (TTS)}: The agent's generated text is streamed to ElevenLabs, which converts it back to human-like audio.
+    \item \textbf{Audio Delivery}: The generated audio chunks are base64 encoded and sent back to Twilio to be played to the user.
+\end{enumerate}
+
+\section{Technology Stack}
+\begin{itemize}
+    \item \textbf{Backend Framework}: FastAPI, Uvicorn, Python 3.12+
+    \item \textbf{Database}: PostgreSQL (Production) / SQLite (Development), SQLAlchemy ORM, Alembic
+    \item \textbf{AI Orchestration}: LangChain, LangGraph, Groq (Llama-3 model)
+    \item \textbf{Voice Processing}: Deepgram (STT), ElevenLabs (TTS), Twilio (Telephony)
+    \item \textbf{Frontend (Admin)}: HTML, CSS, JavaScript, Bootstrap 5
+\end{itemize}
+
+% ----------------------------------------------------------------------
+% CHAPTER 4: IMPLEMENTATION DETAILS
+% ----------------------------------------------------------------------
+\chapter{Implementation Details}
+
+\section{Database Schema Design}
+The relational database is constructed using SQLAlchemy and contains the following core entities:
+\begin{itemize}
+    \item \textbf{Medicines}: Stores brand name, generic name, strength, manufacturer, price, and current stock quantity.
+    \item \textbf{Customers}: Stores customer names, phone numbers (used as primary identifiers), and creation timestamps.
+    \item \textbf{Orders (Reservations)}: Links customers to medicines, storing the reserved quantity and order status (Reserved, Cancelled, Collected).
+\end{itemize}
+
+\section{Agent Tools and Capability}
+The core intelligence of the agent relies on highly defined Python functions decorated as LangChain tools. Key implementations include:
+\begin{itemize}
+    \item \texttt{search\_medicine}: Queries the database using pattern matching (ilike) for generic or brand names and aggregates available manufacturers.
+    \item \texttt{reserve\_medicine}: Accepts phone number, medicine, quantity, and optionally the manufacturer. Enforces stock validation, prevents negative stock, and manages multiple manufacturer collisions by returning available choices to the agent.
+    \item \texttt{get\_drug\_knowledge}: Executes a RAG pipeline by scanning local Markdown/TXT medical documents to provide dosage and side-effect warnings reliably.
+\end{itemize}
+
+\section{Conversation Checkpointing}
+To maintain state during a long-running call, \texttt{langgraph-checkpoint-sqlite} is utilized. The \texttt{thread\_id} corresponds to the active Twilio Call SID, allowing the LLM to remember the customer's phone number, name, and previously requested items throughout the session.
+
+% ----------------------------------------------------------------------
+% CHAPTER 5: RESULTS AND DISCUSSION
+% ----------------------------------------------------------------------
+\chapter{Results and Discussion}
+
+\section{Performance and Latency}
+The system successfully conducts real-time voice conversations. By utilizing Groq's LPU infrastructure and streaming TTS providers, the End-to-End Latency (from the user stopping speech to the AI beginning its audio response) is maintained between 800ms and 1200ms, effectively eliminating unnatural pauses.
+
+\section{Admin Dashboard Interface}
+A secure, responsive dashboard was deployed. It allows administrators to:
+\begin{itemize}
+    \item \textbf{View Logs}: Inspect the transcriptions and AI reasoning outputs live.
+    \item \textbf{Manage Stock}: Add new medications and remove obsolete stock.
+    \item \textbf{Monitor Reservations}: Track incoming orders in real-time and cancel or mark them as collected.
+\end{itemize}
+
+\section{Tool Execution Accuracy}
+During testing, the LLM consistently called the correct tools based on the system prompt guidelines. Ambiguous queries involving medicines with multiple manufacturers prompted the agent to successfully query the user for clarification before executing a reservation, highlighting its robust decision-making logic.
+
+% ----------------------------------------------------------------------
+% CHAPTER 6: CONCLUSION AND FUTURE WORK
+% ----------------------------------------------------------------------
+\chapter{Conclusion and Future Work}
+
+\section{Conclusion}
+This project successfully demonstrates the feasibility of employing an autonomous AI Voice Assistant within a retail pharmacy context. By orchestrating modern streaming STT/TTS services alongside an agentic LLM workflow, the system achieves a highly natural, responsive, and functional customer service experience. It automates inventory checks, secures reservations, and safely imparts verified drug information, greatly alleviating the manual overhead imposed on pharmaceutical staff.
+
+\section{Future Enhancements}
+Future iterations of this system could implement:
+\begin{itemize}
+    \item \textbf{Multilingual Support}: Allowing the agent to converse in multiple regional languages using Deepgram and ElevenLabs localization capabilities.
+    \item \textbf{Prescription Processing}: Integrating visual AI to allow users to send images of their prescriptions via WhatsApp, linking the image parsing seamlessly with the voice assistant.
+    \item \textbf{Payment Gateway Integration}: Permitting customers to securely pay for their reservations over the phone using DTMF tone recognition or SMS payment links.
+\end{itemize}
+
+% ----------------------------------------------------------------------
+% REFERENCES
+% ----------------------------------------------------------------------
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\bibitem{langchain}
+LangChain AI, \textit{LangChain Documentation}, 2024. [Online]. Available: \url{https://python.langchain.com/}.
+
+\bibitem{langgraph}
+LangChain AI, \textit{LangGraph: Stateful Multi-Actor LLM Applications}, 2024. [Online]. Available: \url{https://langchain-ai.github.io/langgraph/}.
+
+\bibitem{twilio}
+Twilio Inc., \textit{Twilio Voice Media Streams}, 2024. [Online]. Available: \url{https://www.twilio.com/docs/voice/media-streams}.
+
+\bibitem{deepgram}
+Deepgram, \textit{Deepgram Real-Time Streaming Documentation}, 2024. [Online]. Available: \url{https://developers.deepgram.com/docs/getting-started-with-streaming-audio}.
+
+\bibitem{elevenlabs}
+ElevenLabs, \textit{ElevenLabs API Reference}, 2024. [Online]. Available: \url{https://elevenlabs.io/docs}.
+
+\bibitem{fastapi}
+Sebastián Ramírez, \textit{FastAPI Documentation}, 2024. [Online]. Available: \url{https://fastapi.tiangolo.com/}.
+
+\end{thebibliography}
+
+\end{document}

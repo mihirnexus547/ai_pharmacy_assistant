@@ -204,12 +204,17 @@ async def admin_portal(admin_token: str = Cookie(None)):
 
 @app.get("/api/admin/data")
 async def get_admin_data(
+    response: Response,
     db: Session = Depends(get_db),
     admin_token: str = Cookie(None)
 ):
     """
     Return all database tables and memory-based chat sessions (401 if unauthenticated).
     """
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
     expected_token = get_admin_token()
     if not admin_token or admin_token != expected_token:
         raise HTTPException(
