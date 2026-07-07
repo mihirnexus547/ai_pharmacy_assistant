@@ -110,16 +110,33 @@ async def websocket_twilio(websocket: WebSocket):
         except Exception as e:
             logger.error(f"[Twilio WS] Error generating/sending speech: {e}")
 
-    async def process_user_input(session_id: str, user_text: str):
+    async def process_user_input(session_id: str, user_text: str, start_time: float = None):
+        import time
+        if start_time is None:
+            start_time = time.perf_counter()
+            
         try:
             logger.info(f"[Twilio WS] Processing transcript: {user_text}")
-            # Run the AI Pharmacy Assistant agent
+            
+            # 1. Measure LLM Latency
+            llm_start = time.perf_counter()
             response = await voice_service.process_transcript(
                 session_id=session_id,
                 transcript=user_text,
             )
+            llm_end = time.perf_counter()
+            logger.info(f"[Latency] LLM Inference + Tools took: {(llm_end - llm_start) * 1000:.2f} ms")
+            
             if response:
-                await speak_response(response)
+                # 2. Measure TTS Latency
+                tts_start = time.perf_counter()
+                audio = tts.text_to_speech(response, output_format="ulaw_8000")
+                tts_end = time.perf_counter()
+                logger.info(f"[Latency] TTS Synthesis took: {(tts_end - tts_start) * 1000:.2f} ms")
+                
+                logger.info(f"[Latency] Total System E2E Latency: {(tts_end - start_time) * 1000:.2f} ms")
+                
+                await send_audio(audio)
         except asyncio.CancelledError:
             logger.info("[Twilio WS] Process user input cancelled.")
             raise
@@ -176,9 +193,11 @@ async def websocket_twilio(websocket: WebSocket):
                         response_task.cancel()
 
                     # Start processing user input as a new task
+                    import time
+                    stt_end_time = time.perf_counter()
                     session_id = call_sid if call_sid else "twilio_call"
                     response_task = asyncio.create_task(
-                        process_user_input(session_id, full_transcript)
+                        process_user_input(session_id, full_transcript, stt_end_time)
                     )
 
             except asyncio.CancelledError:
