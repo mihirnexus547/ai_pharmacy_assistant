@@ -267,7 +267,7 @@ async def get_admin_data(
     chat_histories = {}
     try:
         import sqlite3
-        conn = sqlite3.connect("checkpoints.db")
+        conn = sqlite3.connect("data/checkpoints.db")
         cursor = conn.cursor()
         # Verify checkpoints table exists first
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
@@ -592,7 +592,7 @@ async def api_admin_delete_chat(
         
     try:
         import sqlite3
-        conn = sqlite3.connect("checkpoints.db")
+        conn = sqlite3.connect("data/checkpoints.db")
         cursor = conn.cursor()
         
         # Verify checkpoints table exists first

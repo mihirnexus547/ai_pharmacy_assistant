@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.prebuilt import create_react_agent
 from app.prompts import SYSTEM_PROMPT
@@ -12,7 +13,8 @@ from tools.rag_tools import RAG_TOOLS
 
 llm = get_llm()
 
-conn = sqlite3.connect("checkpoints.db", check_same_thread=False)
+os.makedirs("data", exist_ok=True)
+conn = sqlite3.connect("data/checkpoints.db", check_same_thread=False)
 memory = SqliteSaver(conn)
 
 TOOLS = (
