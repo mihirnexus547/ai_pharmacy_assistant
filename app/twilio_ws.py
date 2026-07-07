@@ -35,7 +35,8 @@ async def twilio_inbound(request: Request):
     logger.info(f"[Twilio Webhook] Incoming call from: {caller_phone}")
 
     # Determine websocket protocol and host
-    ws_scheme = "wss" if request.url.scheme == "https" else "ws"
+    forwarded_proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    ws_scheme = "wss" if forwarded_proto == "https" else "ws"
     # request.url.netloc is the host (e.g. localhost:8000 or ngrok domain)
     caller_phone_encoded = urllib.parse.quote(caller_phone)
     stream_url = f"{ws_scheme}://{request.url.netloc}/ws/twilio?caller_phone={caller_phone_encoded}"
