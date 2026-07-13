@@ -390,6 +390,52 @@ async def api_admin_delete_customer(
         "message": "Customer and their associated orders deleted successfully"
     }
 
+@app.put("/api/admin/customers/{customer_id}")
+async def api_admin_update_customer(
+    customer_id: int,
+    request: CustomerCreateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer not found"
+        )
+        
+    try:
+        normalized_phone = validate_and_normalize_phone(request.phone)
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(val_err)
+        )
+        
+    existing = db.query(Customer).filter(Customer.phone == normalized_phone, Customer.id != customer_id).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Customer with phone number '{normalized_phone}' already exists."
+        )
+
+    customer.name = request.name.strip()
+    customer.phone = normalized_phone
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Customer updated successfully"
+    }
+
+
 
 # ============================================================
 # Medicine Management Endpoints
@@ -466,6 +512,40 @@ async def api_admin_delete_medicine(
         "message": "Medicine deleted successfully"
     }
 
+@app.put("/api/admin/medicines/{medicine_id}")
+async def api_admin_update_medicine(
+    medicine_id: int,
+    request: MedicineCreateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    medicine = db.query(Medicine).filter(Medicine.id == medicine_id).first()
+    if not medicine:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Medicine not found"
+        )
+        
+    medicine.name = request.name.strip()
+    medicine.generic_name = request.generic_name.strip()
+    medicine.strength = request.strength.strip()
+    medicine.manufacturer = request.manufacturer.strip()
+    medicine.price = request.price
+    medicine.stock = request.stock
+    
+    db.commit()
+    return {
+        "status": "success",
+        "message": "Medicine updated successfully"
+    }
+
 
 # ============================================================
 # Reservation (Order) Management Endpoints
@@ -475,6 +555,10 @@ from database.models import OrderStatus
 class OrderCreateRequest(BaseModel):
     customer_id: int
     medicine_id: int
+    quantity: int
+
+class OrderUpdateRequest(BaseModel):
+    status: OrderStatus
     quantity: int
 
 @app.post("/api/admin/orders")
@@ -564,7 +648,7 @@ async def api_admin_delete_order(
         
     # Restore stock when deleted
     medicine = db.query(Medicine).filter(Medicine.id == order.medicine_id).first()
-    if medicine:
+    if medicine and order.status != OrderStatus.CANCELLED:
         medicine.stock += order.quantity
         
     db.delete(order)
@@ -572,6 +656,53 @@ async def api_admin_delete_order(
     return {
         "status": "success",
         "message": "Reservation deleted and stock restored successfully"
+    }
+
+@app.put("/api/admin/orders/{order_id}")
+async def api_admin_update_order(
+    order_id: int,
+    request: OrderUpdateRequest,
+    db: Session = Depends(get_db),
+    admin_token: str = Cookie(None)
+):
+    expected_token = get_admin_token()
+    if not admin_token or admin_token != expected_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated as admin",
+        )
+        
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reservation not found"
+        )
+        
+    medicine = db.query(Medicine).filter(Medicine.id == order.medicine_id).first()
+    
+    if order.status != OrderStatus.CANCELLED and request.status == OrderStatus.CANCELLED:
+        if medicine:
+            medicine.stock += order.quantity
+    elif order.status == OrderStatus.CANCELLED and request.status != OrderStatus.CANCELLED:
+        if medicine:
+            if medicine.stock < request.quantity:
+                raise HTTPException(status_code=400, detail="Insufficient stock to un-cancel this reservation.")
+            medicine.stock -= request.quantity
+    elif order.status != OrderStatus.CANCELLED and request.status != OrderStatus.CANCELLED:
+        diff = request.quantity - order.quantity
+        if diff > 0 and medicine and medicine.stock < diff:
+            raise HTTPException(status_code=400, detail="Insufficient stock for increased quantity.")
+        if medicine:
+            medicine.stock -= diff
+            
+    order.status = request.status
+    order.quantity = request.quantity
+    db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Reservation updated successfully"
     }
 
 

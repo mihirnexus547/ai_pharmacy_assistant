@@ -139,6 +139,10 @@ def search_drug_by_indication(symptom_or_use: str) -> str:
     """
     Search for medicines in the knowledge base that treat a specific symptom, condition, or indication.
     """
+    import time
+    from services.logger import logger
+    rag_start = time.perf_counter()
+    
     if not os.path.exists(KB_DIR):
         return "Knowledge base directory not found."
 
@@ -180,6 +184,7 @@ def search_drug_by_indication(symptom_or_use: str) -> str:
                         break
             
             if semantic_matches:
+                logger.info(f"[Latency] RAG Retrieval took: {(time.perf_counter() - rag_start) * 1000:.2f} ms")
                 return "The following medicines match your search: " + ", ".join(semantic_matches)
         except Exception as e:
             # Print error but fall back silently to keyword search
@@ -214,8 +219,10 @@ def search_drug_by_indication(symptom_or_use: str) -> str:
         return f"Error searching knowledge base: {e}"
 
     if not matching_drugs:
+        logger.info(f"[Latency] RAG Retrieval took: {(time.perf_counter() - rag_start) * 1000:.2f} ms")
         return f"No medicines found in the knowledge base that match the condition or symptom: {symptom_or_use}."
 
+    logger.info(f"[Latency] RAG Retrieval took: {(time.perf_counter() - rag_start) * 1000:.2f} ms")
     return "The following medicines match your search: " + ", ".join(matching_drugs)
 
 RAG_TOOLS = [

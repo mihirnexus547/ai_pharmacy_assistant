@@ -56,6 +56,9 @@ def reserve_medicine(
         return f"Error: {e}"
 
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
         from sqlalchemy import func
@@ -123,6 +126,7 @@ def reserve_medicine(
 
     finally:
         db.close()
+        logger.info(f"[Latency] SQL Execution (reserve_medicine) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 
 # ----------------------------
@@ -136,6 +140,9 @@ def cancel_reservation(order_id: int) -> str:
     """
 
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
 
@@ -152,6 +159,7 @@ def cancel_reservation(order_id: int) -> str:
     finally:
 
         db.close()
+        logger.info(f"[Latency] SQL Execution (cancel_reservation) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 
 # ----------------------------
@@ -169,6 +177,9 @@ def get_customer_orders(phone: str) -> str:
         return f"Error: {e}"
 
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
 
@@ -211,6 +222,7 @@ Status   : {order.status}
     finally:
 
         db.close()
+        logger.info(f"[Latency] SQL Execution (get_customer_orders) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 
 ORDER_TOOLS = [

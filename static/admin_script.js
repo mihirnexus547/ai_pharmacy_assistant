@@ -63,7 +63,10 @@ function renderMedicines(list) {
                     ${m.stock}
                 </span>
             </td>
-            <td style="text-align: center;">
+            <td style="text-align: center; white-space: nowrap;">
+                <button class="btn btn-outline-primary btn-sm me-1" onclick="openEditMedicine(${m.id})" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-pencil-fill"></i> Edit
+                </button>
                 <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteMedicine(${m.id}, '${m.name.replace(/'/g, "\\'")}')" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
                     <i class="bi bi-trash-fill"></i> Delete
                 </button>
@@ -92,7 +95,10 @@ function renderCustomers(list) {
             <td><span class="fw-bold">${c.name}</span></td>
             <td><i class="bi bi-telephone text-muted me-1"></i> ${c.phone}</td>
             <td><span class="text-muted" style="font-size: 13px;">${formatDateTime(c.created_at)}</span></td>
-            <td style="text-align: center;">
+            <td style="text-align: center; white-space: nowrap;">
+                <button class="btn btn-outline-primary btn-sm me-1" onclick="openEditCustomer(${c.id})" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-pencil-fill"></i> Edit
+                </button>
                 <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
                     <i class="bi bi-trash-fill"></i> Delete
                 </button>
@@ -123,7 +129,10 @@ function renderOrders(list) {
             <td><span class="badge bg-secondary">${o.quantity}</span></td>
             <td><span class="badge-status ${o.status}">${o.status}</span></td>
             <td><span class="text-muted" style="font-size: 13px;">${formatDateTime(o.reserved_at)}</span></td>
-            <td style="text-align: center;">
+            <td style="text-align: center; white-space: nowrap;">
+                <button class="btn btn-outline-primary btn-sm me-1" onclick="openEditOrder(${o.id})" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
+                    <i class="bi bi-pencil-fill"></i> Edit
+                </button>
                 <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteOrder(${o.id})" style="border-radius: 50px; font-weight: 600; padding: 4px 12px; font-size: 13px;">
                     <i class="bi bi-trash-fill"></i> Delete
                 </button>
@@ -465,3 +474,157 @@ if (addOrderForm) {
         }
     };
 }
+
+// ============================================================
+// EDIT Handlers
+// ============================================================
+
+// --- CUSTOMER EDIT ---
+function openEditCustomer(id) {
+    const customer = adminData.customers.find(c => c.id === id);
+    if (!customer) return;
+    
+    document.getElementById("editCustomerId").value = customer.id;
+    document.getElementById("editCustomerName").value = customer.name;
+    document.getElementById("editCustomerPhone").value = customer.phone;
+    document.getElementById("editCustomerError").classList.add("d-none");
+    
+    const modal = new bootstrap.Modal(document.getElementById("editCustomerModal"));
+    modal.show();
+}
+
+const editCustomerForm = document.getElementById("editCustomerForm");
+if (editCustomerForm) {
+    editCustomerForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("editCustomerId").value;
+        const name = document.getElementById("editCustomerName").value;
+        const phone = document.getElementById("editCustomerPhone").value;
+        const errorEl = document.getElementById("editCustomerError");
+        
+        try {
+            const res = await fetch(`/api/admin/customers/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, phone })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById("editCustomerModal"));
+                if (modal) modal.hide();
+                alert("Customer updated successfully!");
+                loadAdminData();
+            } else {
+                errorEl.textContent = data.detail || "Error updating customer.";
+                errorEl.classList.remove("d-none");
+            }
+        } catch (err) {
+            errorEl.textContent = "Failed to update customer.";
+            errorEl.classList.remove("d-none");
+        }
+    };
+}
+
+// --- MEDICINE EDIT ---
+function openEditMedicine(id) {
+    const medicine = adminData.medicines.find(m => m.id === id);
+    if (!medicine) return;
+    
+    document.getElementById("editMedicineId").value = medicine.id;
+    document.getElementById("editMedicineName").value = medicine.name;
+    document.getElementById("editMedicineGenericName").value = medicine.generic_name;
+    document.getElementById("editMedicineStrength").value = medicine.strength;
+    document.getElementById("editMedicineManufacturer").value = medicine.manufacturer;
+    document.getElementById("editMedicinePrice").value = medicine.price;
+    document.getElementById("editMedicineStock").value = medicine.stock;
+    document.getElementById("editMedicineError").classList.add("d-none");
+    
+    const modal = new bootstrap.Modal(document.getElementById("editMedicineModal"));
+    modal.show();
+}
+
+const editMedicineForm = document.getElementById("editMedicineForm");
+if (editMedicineForm) {
+    editMedicineForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("editMedicineId").value;
+        const name = document.getElementById("editMedicineName").value;
+        const generic_name = document.getElementById("editMedicineGenericName").value;
+        const strength = document.getElementById("editMedicineStrength").value;
+        const manufacturer = document.getElementById("editMedicineManufacturer").value;
+        const price = parseFloat(document.getElementById("editMedicinePrice").value);
+        const stock = parseInt(document.getElementById("editMedicineStock").value);
+        const errorEl = document.getElementById("editMedicineError");
+        
+        try {
+            const res = await fetch(`/api/admin/medicines/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, generic_name, strength, manufacturer, price, stock })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById("editMedicineModal"));
+                if (modal) modal.hide();
+                alert("Medicine updated successfully!");
+                loadAdminData();
+            } else {
+                errorEl.textContent = data.detail || "Error updating medicine.";
+                errorEl.classList.remove("d-none");
+            }
+        } catch (err) {
+            errorEl.textContent = "Failed to update medicine.";
+            errorEl.classList.remove("d-none");
+        }
+    };
+}
+
+// --- ORDER EDIT ---
+function openEditOrder(id) {
+    const order = adminData.orders.find(o => o.id === id);
+    if (!order) return;
+    
+    document.getElementById("editOrderId").value = order.id;
+    document.getElementById("editOrderStatus").value = order.status;
+    document.getElementById("editOrderQuantity").value = order.quantity;
+    document.getElementById("editOrderError").classList.add("d-none");
+    
+    const modal = new bootstrap.Modal(document.getElementById("editOrderModal"));
+    modal.show();
+}
+
+const editOrderForm = document.getElementById("editOrderForm");
+if (editOrderForm) {
+    editOrderForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("editOrderId").value;
+        const status = document.getElementById("editOrderStatus").value;
+        const quantity = parseInt(document.getElementById("editOrderQuantity").value);
+        const errorEl = document.getElementById("editOrderError");
+        
+        try {
+            const res = await fetch(`/api/admin/orders/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status, quantity })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById("editOrderModal"));
+                if (modal) modal.hide();
+                alert("Reservation updated successfully!");
+                loadAdminData();
+            } else {
+                errorEl.textContent = data.detail || "Error updating reservation.";
+                errorEl.classList.remove("d-none");
+            }
+        } catch (err) {
+            errorEl.textContent = "Failed to update reservation.";
+            errorEl.classList.remove("d-none");
+        }
+    };
+}
+

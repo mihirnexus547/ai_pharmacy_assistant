@@ -37,6 +37,9 @@ def search_medicine(medicine_name: str) -> str:
     """
 
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
         from sqlalchemy import func
@@ -68,6 +71,7 @@ def search_medicine(medicine_name: str) -> str:
 
     finally:
         db.close()
+        logger.info(f"[Latency] SQL Execution (search_medicine) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 
 # ----------------------------
@@ -81,6 +85,9 @@ def check_stock(medicine_name: str) -> str:
     """
 
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
         repo = crud.MedicineRepository(db)
@@ -97,6 +104,7 @@ def check_stock(medicine_name: str) -> str:
 
     finally:
         db.close()
+        logger.info(f"[Latency] SQL Execution (check_stock) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 
 # ----------------------------
@@ -110,6 +118,9 @@ def list_available_medicines() -> dict:
     """
     
     db = SessionLocal()
+    import time
+    from services.logger import logger
+    sql_start = time.perf_counter()
 
     try:
         repo = crud.MedicineRepository(db)
@@ -126,6 +137,7 @@ def list_available_medicines() -> dict:
 
     finally:
         db.close()
+        logger.info(f"[Latency] SQL Execution (list_available_medicines) took: {(time.perf_counter() - sql_start) * 1000:.2f} ms")
 
 MEDICINE_TOOLS = [
     search_medicine,

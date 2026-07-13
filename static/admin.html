@@ -584,6 +584,126 @@
     </div>
 </div>
 
+<!-- Edit Customer Modal -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 20px 25px;">
+                <h5 class="modal-title fw-bold" id="editCustomerModalLabel">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Customer
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCustomerForm">
+                <input type="hidden" id="editCustomerId">
+                <div class="modal-body" style="padding: 25px;">
+                    <div id="editCustomerError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="mb-3">
+                        <label for="editCustomerName" class="form-label fw-semibold">Full Name</label>
+                        <input type="text" class="form-control" id="editCustomerName" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCustomerPhone" class="form-label fw-semibold">Phone Number (10 digits)</label>
+                        <input type="text" class="form-control" id="editCustomerPhone" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05); padding: 15px 25px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 50px; font-weight: 600; padding: 10px 25px;">Update Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Medicine Modal -->
+<div class="modal fade" id="editMedicineModal" tabindex="-1" aria-labelledby="editMedicineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 20px 25px;">
+                <h5 class="modal-title fw-bold" id="editMedicineModalLabel">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Medicine
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editMedicineForm">
+                <input type="hidden" id="editMedicineId">
+                <div class="modal-body" style="padding: 25px;">
+                    <div id="editMedicineError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="mb-3">
+                        <label for="editMedicineName" class="form-label fw-semibold">Brand Name</label>
+                        <input type="text" class="form-control" id="editMedicineName" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editMedicineGenericName" class="form-label fw-semibold">Generic Chemical Name</label>
+                        <input type="text" class="form-control" id="editMedicineGenericName" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editMedicineStrength" class="form-label fw-semibold">Strength</label>
+                            <input type="text" class="form-control" id="editMedicineStrength" required style="border-radius: 10px; padding: 10px 15px;">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editMedicineManufacturer" class="form-label fw-semibold">Manufacturer</label>
+                            <input type="text" class="form-control" id="editMedicineManufacturer" required style="border-radius: 10px; padding: 10px 15px;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editMedicinePrice" class="form-label fw-semibold">Price (₹)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="editMedicinePrice" required style="border-radius: 10px; padding: 10px 15px;">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editMedicineStock" class="form-label fw-semibold">Stock Quantity</label>
+                            <input type="number" min="0" class="form-control" id="editMedicineStock" required style="border-radius: 10px; padding: 10px 15px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05); padding: 15px 25px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 50px; font-weight: 600; padding: 10px 25px;">Update Medicine</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Reservation Modal -->
+<div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.05); padding: 20px 25px;">
+                <h5 class="modal-title fw-bold" id="editOrderModalLabel">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Reservation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editOrderForm">
+                <input type="hidden" id="editOrderId">
+                <div class="modal-body" style="padding: 25px;">
+                    <div id="editOrderError" class="alert alert-danger d-none" role="alert"></div>
+                    <div class="mb-3">
+                        <label for="editOrderStatus" class="form-label fw-semibold">Status</label>
+                        <select class="form-select" id="editOrderStatus" required style="border-radius: 10px; padding: 10px 15px;">
+                            <option value="Reserved">Reserved</option>
+                            <option value="Collected">Collected</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOrderQuantity" class="form-label fw-semibold">Quantity</label>
+                        <input type="number" min="1" class="form-control" id="editOrderQuantity" required style="border-radius: 10px; padding: 10px 15px;">
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05); padding: 15px 25px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 50px; font-weight: 600; padding: 10px 20px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 50px; font-weight: 600; padding: 10px 25px;">Update Reservation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/admin_script.js"></script>
 </body>
